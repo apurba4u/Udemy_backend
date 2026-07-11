@@ -27,6 +27,9 @@ import testimonialRoutes from './routes/testimonial.routes.js';
 import blogRoutes from './routes/blog.routes.js';
 import faqRoutes from './routes/faq.routes.js';
 import contactMessageRoutes from './routes/contactMessage.routes.js';
+import couponRoutes from './routes/coupon.routes.js';
+import paymentGatewayRoutes from './routes/paymentGateway.routes.js';
+import orderRoutes from './routes/order.routes.js';
 
 const validateEnvironment = (): void => {
   const required = [
@@ -98,6 +101,9 @@ app.use('/api/testimonials', rateLimiter, testimonialRoutes);
 app.use('/api/blogs', rateLimiter, blogRoutes);
 app.use('/api/faqs', rateLimiter, faqRoutes);
 app.use('/api/contact-messages', rateLimiter, contactMessageRoutes);
+app.use('/api/coupons', rateLimiter, couponRoutes);
+app.use('/api/payment-gateways', rateLimiter, paymentGatewayRoutes);
+app.use('/api/orders', rateLimiter, orderRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.status(200).json({
