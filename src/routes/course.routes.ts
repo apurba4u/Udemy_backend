@@ -1,0 +1,109 @@
+import { Router } from 'express';
+import { body } from 'express-validator';
+import {
+  createCourse,
+  getCourses,
+  getCourseBySlug,
+  getCourseById,
+  updateCourse,
+  deleteCourse,
+  publishCourse,
+  unpublishCourse,
+  addLesson,
+  updateLesson,
+  deleteLesson,
+  getFeaturedCourses,
+  getPopularCourses,
+  getLatestCourses,
+} from '../controllers/course.controller.js';
+import { authenticate, authorize, optionalAuth } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { UserRole } from '../types/index.js';
+
+const router = Router();
+
+router.get('/featured', getFeaturedCourses);
+router.get('/popular', getPopularCourses);
+router.get('/latest', getLatestCourses);
+
+router.get('/', optionalAuth, getCourses);
+router.get('/slug/:slug', optionalAuth, getCourseBySlug);
+router.get('/:id', optionalAuth, getCourseById);
+
+router.post(
+  '/',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  validate([
+    body('title').trim().notEmpty().withMessage('Title is required'),
+    body('description').notEmpty().withMessage('Description is required'),
+    body('shortDescription')
+      .trim()
+      .notEmpty()
+      .withMessage('Short description is required'),
+    body('price')
+      .isFloat({ min: 0 })
+      .withMessage('Price must be a positive number'),
+    body('thumbnail').notEmpty().withMessage('Thumbnail is required'),
+    body('category').notEmpty().withMessage('Category is required'),
+  ]),
+  createCourse
+);
+
+router.put(
+  '/:id',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  updateCourse
+);
+
+router.delete(
+  '/:id',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  deleteCourse
+);
+
+router.put(
+  '/:id/publish',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  publishCourse
+);
+
+router.put(
+  '/:id/unpublish',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  unpublishCourse
+);
+
+router.post(
+  '/:id/lessons',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  validate([
+    body('title').trim().notEmpty().withMessage('Title is required'),
+    body('videoUrl').notEmpty().withMessage('Video URL is required'),
+    body('duration')
+      .isFloat({ min: 0 })
+      .withMessage('Duration must be a positive number'),
+  ]),
+  addLesson
+);
+
+router.put(
+  '/:id/lessons/:lessonId',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  updateLesson
+);
+
+router.delete(
+  '/:id/lessons/:lessonId',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  deleteLesson
+);
+
+export default router;
