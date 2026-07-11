@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: udemy-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: udemy_clone
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: udemy-backend
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongodb
+    environment:
+      - PORT=5001
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/udemy_clone
+      - JWT_SECRET=dev_secret_key
+      - BETTER_AUTH_SECRET=dev_auth_secret
+      - BETTER_AUTH_URL=http://localhost:5001
+      - FRONTEND_URL=http://localhost:3000
+    volumes:
+      - ./Backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: udemy-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5001/api
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+      - /app/.next
+
+volumes:
+  mongodb_data:
