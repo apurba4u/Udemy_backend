@@ -39,9 +39,31 @@ export const authenticate = async (
       return;
     }
 
+    if (user.isBlocked) {
+      res.status(403).json({
+        success: false,
+        message: 'Your account has been blocked. Please contact support.',
+      });
+      return;
+    }
+
     req.user = user;
     next();
   } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      res.status(401).json({
+        success: false,
+        message: 'Token expired, please login again',
+      });
+      return;
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid token, please login again',
+      });
+      return;
+    }
     res.status(401).json({
       success: false,
       message: 'Not authorized, please login',
@@ -71,6 +93,10 @@ export const authorize = (...roles: UserRole[]) => {
   };
 };
 
+export const authorizeAdmin = authorize(UserRole.ADMIN);
+
+export const authorizeStudent = authorize(UserRole.STUDENT);
+
 export const optionalAuth = async (
   req: Request,
   _res: Response,
@@ -82,7 +108,7 @@ export const optionalAuth = async (
     if (token) {
       const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: string };
       const user = await User.findById(decoded.userId);
-      if (user) {
+      if (user && !user.isBlocked) {
         req.user = user;
       }
     }

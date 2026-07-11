@@ -7,6 +7,9 @@ import {
   getMe,
   updateProfile,
   updatePassword,
+  forgotPassword,
+  resetPassword,
+  googleLogin,
 } from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -50,7 +53,7 @@ router.post(
   login
 );
 
-router.post('/logout', logout);
+router.post('/logout', authenticate, logout);
 
 router.get('/me', authenticate, getMe);
 
@@ -86,6 +89,38 @@ router.put(
       ),
   ]),
   updatePassword
+);
+
+router.post(
+  '/forgot-password',
+  validate([
+    body('email').isEmail().withMessage('Please provide a valid email'),
+  ]),
+  forgotPassword
+);
+
+router.post(
+  '/reset-password',
+  validate([
+    body('token').notEmpty().withMessage('Reset token is required'),
+    body('password')
+      .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters')
+      .matches(strongPasswordRegex)
+      .withMessage(
+        'Password must contain uppercase, lowercase, number, and special character (@$!%*?&#)'
+      ),
+  ]),
+  resetPassword
+);
+
+router.post(
+  '/google',
+  validate([
+    body('email').isEmail().withMessage('Please provide a valid email'),
+    body('fullName').trim().notEmpty().withMessage('Full name is required'),
+  ]),
+  googleLogin
 );
 
 export default router;
