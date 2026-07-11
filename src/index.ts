@@ -36,6 +36,7 @@ import exportRoutes from './routes/export.routes.js';
 import learningRoutes from './routes/learning.routes.js';
 import noteRoutes from './routes/note.routes.js';
 import bookmarkRoutes from './routes/bookmark.routes.js';
+import checkoutRoutes from './routes/checkout.routes.js';
 
 const validateEnvironment = (): void => {
   const required = [
@@ -116,6 +117,7 @@ app.use('/api/exports', rateLimiter, exportRoutes);
 app.use('/api/learning', rateLimiter, learningRoutes);
 app.use('/api/notes', rateLimiter, noteRoutes);
 app.use('/api/bookmarks', rateLimiter, bookmarkRoutes);
+app.use('/api/checkout', rateLimiter, checkoutRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.status(200).json({
