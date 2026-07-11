@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 import { IEnrollment } from '../types/index.js';
 
 const enrollmentSchema = new Schema<IEnrollment>(
@@ -13,20 +13,22 @@ const enrollmentSchema = new Schema<IEnrollment>(
       ref: 'Course',
       required: [true, 'Course is required'],
     },
-    progress: {
-      type: Number,
-      default: 0,
-      min: [0, 'Progress cannot be less than 0'],
-      max: [100, 'Progress cannot exceed 100'],
+    payment: {
+      type: Schema.Types.ObjectId,
+      ref: 'Payment',
+      default: null,
     },
-    completedLessons: [
-      {
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    lastAccessedAt: {
+    enrolledAt: {
       type: Date,
       default: Date.now,
+    },
+    completed: {
+      type: Boolean,
+      default: false,
+    },
+    completedAt: {
+      type: Date,
+      default: null,
     },
   },
   {
@@ -37,9 +39,9 @@ const enrollmentSchema = new Schema<IEnrollment>(
 enrollmentSchema.index({ student: 1, course: 1 }, { unique: true });
 enrollmentSchema.index({ student: 1 });
 enrollmentSchema.index({ course: 1 });
-enrollmentSchema.index({ lastAccessedAt: -1 });
+enrollmentSchema.index({ enrolledAt: -1 });
 
-export const Enrollment = mongoose.model<IEnrollment>(
+export const Enrollment: Model<IEnrollment> = mongoose.model<IEnrollment>(
   'Enrollment',
   enrollmentSchema
 );

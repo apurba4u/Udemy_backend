@@ -213,7 +213,7 @@ export const getCourses = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { page = 1, limit = 10, search, isPublished } = req.query;
+    const { page = 1, limit = 10, search, published } = req.query;
 
     const query = Course.find();
 
@@ -222,8 +222,8 @@ export const getCourses = async (
       query.where('title').regex(new RegExp(searchTerm, 'i'));
     }
 
-    if (isPublished !== undefined) {
-      query.where('isPublished').equals(isPublished === 'true');
+    if (published !== undefined) {
+      query.where('published').equals(published === 'true');
     }
 
     const total = await Course.countDocuments(query);
@@ -261,7 +261,7 @@ export const toggleCoursePublish = async (
       throw new AppError('Course not found', 404);
     }
 
-    course.isPublished = !course.isPublished;
+    course.published = !course.published;
     await course.save();
 
     res.status(200).json({

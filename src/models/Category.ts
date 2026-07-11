@@ -19,9 +19,21 @@ const categorySchema = new Schema<ICategory>(
       type: String,
       maxlength: [500, 'Description cannot exceed 500 characters'],
     },
+    icon: {
+      type: String,
+      default: null,
+    },
     image: {
       type: String,
       default: null,
+    },
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+    active: {
+      type: Boolean,
+      default: true,
     },
     courseCount: {
       type: Number,
@@ -44,5 +56,10 @@ categorySchema.pre('save', function () {
 
 categorySchema.index({ name: 1 });
 categorySchema.index({ slug: 1 });
+categorySchema.index({ featured: 1 });
+categorySchema.index({ active: 1 });
 
-export const Category: Model<ICategory> = mongoose.model<ICategory>('Category', categorySchema);
+export const Category: Model<ICategory> = mongoose.model<ICategory>(
+  'Category',
+  categorySchema
+);

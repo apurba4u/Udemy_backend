@@ -3,7 +3,6 @@ import {
   enrollInCourse,
   getMyEnrollments,
   getEnrollment,
-  updateProgress,
   unenrollFromCourse,
   getEnrolledStudents,
 } from '../controllers/enrollment.controller.js';
@@ -31,13 +30,6 @@ router.get(
   authenticate,
   authorize(UserRole.STUDENT),
   getEnrollment
-);
-
-router.put(
-  '/course/:courseId/lesson/:lessonId',
-  authenticate,
-  authorize(UserRole.STUDENT),
-  updateProgress
 );
 
 router.delete(

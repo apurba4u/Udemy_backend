@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 import { IReview } from '../types/index.js';
 
 const reviewSchema = new Schema<IReview>(
@@ -22,7 +22,7 @@ const reviewSchema = new Schema<IReview>(
     comment: {
       type: String,
       required: [true, 'Review comment is required'],
-      maxlength: [1000, 'Comment cannot exceed 1000 characters'],
+      maxlength: [2000, 'Comment cannot exceed 2000 characters'],
     },
   },
   {
@@ -34,4 +34,7 @@ reviewSchema.index({ student: 1, course: 1 }, { unique: true });
 reviewSchema.index({ course: 1 });
 reviewSchema.index({ rating: 1 });
 
-export const Review = mongoose.model<IReview>('Review', reviewSchema);
+export const Review: Model<IReview> = mongoose.model<IReview>(
+  'Review',
+  reviewSchema
+);

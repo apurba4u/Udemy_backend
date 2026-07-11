@@ -8,7 +8,8 @@ import { env } from './config/env.js';
 import { connectDatabase } from './config/database.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { User } from './models/User.js';
-import { UserRole } from './types/index.js';
+import { PaymentGateway } from './models/PaymentGateway.js';
+import { UserRole, PaymentGatewayType } from './types/index.js';
 
 import authRoutes from './routes/auth.routes.js';
 import courseRoutes from './routes/course.routes.js';
@@ -47,7 +48,7 @@ app.get('/api/health', (_req, res) => {
 
 app.use(errorHandler);
 
-const createDefaultAdmin = async (): Promise<void> => {
+const seedDefaultAdmin = async (): Promise<void> => {
   try {
     const adminExists = await User.findOne({ role: UserRole.ADMIN });
 
@@ -66,10 +67,60 @@ const createDefaultAdmin = async (): Promise<void> => {
   }
 };
 
+const seedPaymentGateways = async (): Promise<void> => {
+  try {
+    const gatewaysExist = await PaymentGateway.countDocuments();
+
+    if (gatewaysExist === 0) {
+      await PaymentGateway.insertMany([
+        {
+          name: 'Stripe',
+          type: PaymentGatewayType.STRIPE,
+          enabled: true,
+          displayOrder: 1,
+          configuration: {
+            publishableKey: env.STRIPE_PUBLISHABLE_KEY || '',
+            secretKey: env.STRIPE_SECRET_KEY || '',
+          },
+          instructions: 'Pay securely with credit/debit card via Stripe.',
+        },
+        {
+          name: 'bKash',
+          type: PaymentGatewayType.BKASH,
+          enabled: true,
+          displayOrder: 2,
+          configuration: {
+            accountNumber: '',
+            accountHolder: '',
+          },
+          instructions:
+            'Send money to the bKash number below and upload the screenshot as payment proof.',
+        },
+        {
+          name: 'Nagad',
+          type: PaymentGatewayType.NAGAD,
+          enabled: true,
+          displayOrder: 3,
+          configuration: {
+            accountNumber: '',
+            accountHolder: '',
+          },
+          instructions:
+            'Send money to the Nagad number below and upload the screenshot as payment proof.',
+        },
+      ]);
+      console.log('Default payment gateways created');
+    }
+  } catch (error) {
+    console.error('Error creating payment gateways:', error);
+  }
+};
+
 const startServer = async (): Promise<void> => {
   try {
     await connectDatabase();
-    await createDefaultAdmin();
+    await seedDefaultAdmin();
+    await seedPaymentGateways();
 
     app.listen(env.PORT, () => {
       console.log(`Server running on port ${env.PORT}`);

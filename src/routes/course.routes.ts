@@ -9,9 +9,6 @@ import {
   deleteCourse,
   publishCourse,
   unpublishCourse,
-  addLesson,
-  updateLesson,
-  deleteLesson,
   getFeaturedCourses,
   getPopularCourses,
   getLatestCourses,
@@ -37,10 +34,6 @@ router.post(
   validate([
     body('title').trim().notEmpty().withMessage('Title is required'),
     body('description').notEmpty().withMessage('Description is required'),
-    body('shortDescription')
-      .trim()
-      .notEmpty()
-      .withMessage('Short description is required'),
     body('price')
       .isFloat({ min: 0 })
       .withMessage('Price must be a positive number'),
@@ -76,34 +69,6 @@ router.put(
   authenticate,
   authorize(UserRole.ADMIN),
   unpublishCourse
-);
-
-router.post(
-  '/:id/lessons',
-  authenticate,
-  authorize(UserRole.ADMIN),
-  validate([
-    body('title').trim().notEmpty().withMessage('Title is required'),
-    body('videoUrl').notEmpty().withMessage('Video URL is required'),
-    body('duration')
-      .isFloat({ min: 0 })
-      .withMessage('Duration must be a positive number'),
-  ]),
-  addLesson
-);
-
-router.put(
-  '/:id/lessons/:lessonId',
-  authenticate,
-  authorize(UserRole.ADMIN),
-  updateLesson
-);
-
-router.delete(
-  '/:id/lessons/:lessonId',
-  authenticate,
-  authorize(UserRole.ADMIN),
-  deleteLesson
 );
 
 export default router;

@@ -3,8 +3,6 @@ import { Course } from '../models/Course.js';
 import { Category } from '../models/Category.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { paginate } from '../utils/pagination.js';
-import { ILesson } from '../types/index.js';
-import mongoose from 'mongoose';
 
 export const createCourse = async (
   req: Request,
@@ -14,33 +12,37 @@ export const createCourse = async (
   try {
     const {
       title,
+      subtitle,
       description,
-      shortDescription,
       price,
       discountPrice,
       thumbnail,
-      trailer,
+      promoVideo,
       category,
       level,
       language,
+      tags,
       requirements,
       learningOutcomes,
+      estimatedDuration,
     } = req.body;
 
     const course = await Course.create({
       title,
+      subtitle,
       description,
-      shortDescription,
       price,
       discountPrice,
       thumbnail,
-      trailer,
+      promoVideo,
       instructor: req.user?._id,
       category,
       level,
       language,
+      tags,
       requirements,
       learningOutcomes,
+      estimatedDuration,
     });
 
     await Category.findByIdAndUpdate(category, {
@@ -49,6 +51,7 @@ export const createCourse = async (
 
     res.status(201).json({
       success: true,
+      message: 'Course created successfully',
       data: course,
     });
   } catch (error) {
@@ -74,7 +77,7 @@ export const getCourses = async (
       rating,
     } = req.query;
 
-    const query = Course.find({ isPublished: true });
+    const query = Course.find({ published: true });
 
     if (category) {
       query.where('category').equals(category as string);
@@ -109,6 +112,7 @@ export const getCourses = async (
 
     res.status(200).json({
       success: true,
+      message: 'Courses retrieved successfully',
       data: result.data,
       pagination: result.pagination,
     });
@@ -125,7 +129,7 @@ export const getCourseBySlug = async (
   try {
     const course = await Course.findOne({
       slug: req.params.slug,
-      isPublished: true,
+      published: true,
     })
       .populate('instructor', 'fullName email avatar bio')
       .populate('category', 'name slug');
@@ -136,6 +140,7 @@ export const getCourseBySlug = async (
 
     res.status(200).json({
       success: true,
+      message: 'Course retrieved successfully',
       data: course,
     });
   } catch (error) {
@@ -159,6 +164,7 @@ export const getCourseById = async (
 
     res.status(200).json({
       success: true,
+      message: 'Course retrieved successfully',
       data: course,
     });
   } catch (error) {
@@ -189,6 +195,7 @@ export const updateCourse = async (
 
     res.status(200).json({
       success: true,
+      message: 'Course updated successfully',
       data: course,
     });
   } catch (error) {
@@ -243,15 +250,12 @@ export const publishCourse = async (
       throw new AppError('Not authorized to publish this course', 403);
     }
 
-    if (course.lessons.length === 0) {
-      throw new AppError('Cannot publish course without lessons', 400);
-    }
-
-    course.isPublished = true;
+    course.published = true;
     await course.save();
 
     res.status(200).json({
       success: true,
+      message: 'Course published successfully',
       data: course,
     });
   } catch (error) {
@@ -275,125 +279,13 @@ export const unpublishCourse = async (
       throw new AppError('Not authorized to unpublish this course', 403);
     }
 
-    course.isPublished = false;
+    course.published = false;
     await course.save();
 
     res.status(200).json({
       success: true,
+      message: 'Course unpublished successfully',
       data: course,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const addLesson = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const course = await Course.findById(req.params.id);
-
-    if (!course) {
-      throw new AppError('Course not found', 404);
-    }
-
-    if (course.instructor.toString() !== req.user?._id.toString()) {
-      throw new AppError('Not authorized to add lessons', 403);
-    }
-
-    const { title, description, videoUrl, duration, isFree, resources } =
-      req.body;
-
-    const newOrder =
-      course.lessons.length > 0
-        ? Math.max(...course.lessons.map((l) => l.order)) + 1
-        : 1;
-
-    const newLesson: ILesson = {
-      _id: new mongoose.Types.ObjectId(),
-      title,
-      description,
-      videoUrl,
-      duration,
-      order: newOrder,
-      isFree,
-      resources,
-    };
-
-    course.lessons.push(newLesson);
-    await course.save();
-
-    res.status(201).json({
-      success: true,
-      data: course,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateLesson = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const course = await Course.findById(req.params.id);
-
-    if (!course) {
-      throw new AppError('Course not found', 404);
-    }
-
-    if (course.instructor.toString() !== req.user?._id.toString()) {
-      throw new AppError('Not authorized to update lessons', 403);
-    }
-
-    const lesson = course.lessons.id(req.params.lessonId as unknown as mongoose.Types.ObjectId);
-    if (!lesson) {
-      throw new AppError('Lesson not found', 404);
-    }
-
-    Object.assign(lesson, req.body);
-    await course.save();
-
-    res.status(200).json({
-      success: true,
-      data: course,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const deleteLesson = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const course = await Course.findById(req.params.id);
-
-    if (!course) {
-      throw new AppError('Course not found', 404);
-    }
-
-    if (course.instructor.toString() !== req.user?._id.toString()) {
-      throw new AppError('Not authorized to delete lessons', 403);
-    }
-
-    const lesson = course.lessons.id(req.params.lessonId as unknown as mongoose.Types.ObjectId);
-    if (!lesson) {
-      throw new AppError('Lesson not found', 404);
-    }
-
-    course.lessons.pull(lesson._id);
-    await course.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Lesson deleted successfully',
     });
   } catch (error) {
     next(error);
@@ -406,7 +298,7 @@ export const getFeaturedCourses = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const courses = await Course.find({ isPublished: true, isFeatured: true })
+    const courses = await Course.find({ published: true, featured: true })
       .populate('instructor', 'fullName avatar')
       .populate('category', 'name')
       .sort('-rating')
@@ -414,6 +306,7 @@ export const getFeaturedCourses = async (
 
     res.status(200).json({
       success: true,
+      message: 'Featured courses retrieved successfully',
       data: courses,
     });
   } catch (error) {
@@ -427,7 +320,7 @@ export const getPopularCourses = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const courses = await Course.find({ isPublished: true })
+    const courses = await Course.find({ published: true })
       .populate('instructor', 'fullName avatar')
       .populate('category', 'name')
       .sort('-enrolledStudents')
@@ -435,6 +328,7 @@ export const getPopularCourses = async (
 
     res.status(200).json({
       success: true,
+      message: 'Popular courses retrieved successfully',
       data: courses,
     });
   } catch (error) {
@@ -448,7 +342,7 @@ export const getLatestCourses = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const courses = await Course.find({ isPublished: true })
+    const courses = await Course.find({ published: true })
       .populate('instructor', 'fullName avatar')
       .populate('category', 'name')
       .sort('-createdAt')
@@ -456,6 +350,7 @@ export const getLatestCourses = async (
 
     res.status(200).json({
       success: true,
+      message: 'Latest courses retrieved successfully',
       data: courses,
     });
   } catch (error) {

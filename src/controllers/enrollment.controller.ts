@@ -17,7 +17,7 @@ export const enrollInCourse = async (
       throw new AppError('Course not found', 404);
     }
 
-    if (!course.isPublished) {
+    if (!course.published) {
       throw new AppError('Course is not available for enrollment', 400);
     }
 
@@ -41,6 +41,7 @@ export const enrollInCourse = async (
 
     res.status(201).json({
       success: true,
+      message: 'Enrolled in course successfully',
       data: enrollment,
     });
   } catch (error) {
@@ -63,10 +64,11 @@ export const getMyEnrollments = async (
           select: 'fullName avatar',
         },
       })
-      .sort('-lastAccessedAt');
+      .sort('-enrolledAt');
 
     res.status(200).json({
       success: true,
+      message: 'Enrollments retrieved successfully',
       data: enrollments,
     });
   } catch (error) {
@@ -103,50 +105,7 @@ export const getEnrollment = async (
 
     res.status(200).json({
       success: true,
-      data: enrollment,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateProgress = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const courseId = req.params.courseId as string;
-    const lessonId = req.params.lessonId as string;
-
-    const enrollment = await Enrollment.findOne({
-      student: req.user?._id,
-      course: courseId,
-    });
-
-    if (!enrollment) {
-      throw new AppError('Enrollment not found', 404);
-    }
-
-    const lessonObjectId = enrollment.completedLessons.find(
-      (id) => id.toString() === lessonId
-    );
-
-    if (!lessonObjectId) {
-      enrollment.completedLessons.push(lessonId as unknown as import('mongoose').Types.ObjectId);
-
-      const course = await Course.findById(courseId);
-      if (course) {
-        enrollment.progress =
-          (enrollment.completedLessons.length / course.lessons.length) * 100;
-      }
-
-      enrollment.lastAccessedAt = new Date();
-      await enrollment.save();
-    }
-
-    res.status(200).json({
-      success: true,
+      message: 'Enrollment retrieved successfully',
       data: enrollment,
     });
   } catch (error) {
@@ -192,10 +151,11 @@ export const getEnrolledStudents = async (
       course: req.params.courseId,
     })
       .populate('student', 'fullName email avatar')
-      .sort('-createdAt');
+      .sort('-enrolledAt');
 
     res.status(200).json({
       success: true,
+      message: 'Enrolled students retrieved successfully',
       data: enrollments,
     });
   } catch (error) {
