@@ -3,15 +3,18 @@ import { body } from 'express-validator';
 import {
   createCourse,
   getCourses,
+  getAllCourses,
   getCourseBySlug,
   getCourseById,
   updateCourse,
   deleteCourse,
   publishCourse,
   unpublishCourse,
+  toggleCourseFeatured,
   getFeaturedCourses,
   getPopularCourses,
   getLatestCourses,
+  duplicateCourse,
 } from '../controllers/course.controller.js';
 import { authenticate, authorize, optionalAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -24,6 +27,7 @@ router.get('/popular', getPopularCourses);
 router.get('/latest', getLatestCourses);
 
 router.get('/', optionalAuth, getCourses);
+router.get('/all', authenticate, authorize(UserRole.ADMIN), getAllCourses);
 router.get('/slug/:slug', optionalAuth, getCourseBySlug);
 router.get('/:id', optionalAuth, getCourseById);
 
@@ -69,6 +73,20 @@ router.put(
   authenticate,
   authorize(UserRole.ADMIN),
   unpublishCourse
+);
+
+router.put(
+  '/:id/toggle-featured',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  toggleCourseFeatured
+);
+
+router.post(
+  '/:id/duplicate',
+  authenticate,
+  authorize(UserRole.ADMIN),
+  duplicateCourse
 );
 
 export default router;

@@ -17,6 +17,7 @@ export const env = {
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
   STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY || '',
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
+  IMGBB_API_KEY: process.env.IMGBB_API_KEY || '',
 } as const;
 
 export type Env = typeof env;

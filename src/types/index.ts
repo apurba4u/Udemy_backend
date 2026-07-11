@@ -52,6 +52,7 @@ export interface ICourse extends Document {
   slug: string;
   description: string;
   thumbnail: string;
+  coverImage?: string;
   promoVideo?: string;
   category: Types.ObjectId;
   instructor: Types.ObjectId;
