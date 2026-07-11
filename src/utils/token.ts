@@ -19,7 +19,7 @@ export const sendTokenResponse = (
 
   const cookieOptions = {
     expires: new Date(
-      Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 days
+      Date.now() + 7 * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
@@ -35,10 +35,11 @@ export const sendTokenResponse = (
       data: {
         user: {
           _id: user._id,
-          name: user.name,
+          fullName: user.fullName,
           email: user.email,
           role: user.role,
           avatar: user.avatar,
+          isVerified: user.isVerified,
         },
         token,
       },

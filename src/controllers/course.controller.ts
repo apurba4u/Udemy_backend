@@ -127,7 +127,7 @@ export const getCourseBySlug = async (
       slug: req.params.slug,
       isPublished: true,
     })
-      .populate('instructor', 'name email avatar bio')
+      .populate('instructor', 'fullName email avatar bio')
       .populate('category', 'name slug');
 
     if (!course) {
@@ -150,7 +150,7 @@ export const getCourseById = async (
 ): Promise<void> => {
   try {
     const course = await Course.findById(req.params.id)
-      .populate('instructor', 'name email avatar bio')
+      .populate('instructor', 'fullName email avatar bio')
       .populate('category', 'name slug');
 
     if (!course) {
@@ -407,7 +407,7 @@ export const getFeaturedCourses = async (
 ): Promise<void> => {
   try {
     const courses = await Course.find({ isPublished: true, isFeatured: true })
-      .populate('instructor', 'name avatar')
+      .populate('instructor', 'fullName avatar')
       .populate('category', 'name')
       .sort('-rating')
       .limit(8);
@@ -428,7 +428,7 @@ export const getPopularCourses = async (
 ): Promise<void> => {
   try {
     const courses = await Course.find({ isPublished: true })
-      .populate('instructor', 'name avatar')
+      .populate('instructor', 'fullName avatar')
       .populate('category', 'name')
       .sort('-enrolledStudents')
       .limit(8);
@@ -449,7 +449,7 @@ export const getLatestCourses = async (
 ): Promise<void> => {
   try {
     const courses = await Course.find({ isPublished: true })
-      .populate('instructor', 'name avatar')
+      .populate('instructor', 'fullName avatar')
       .populate('category', 'name')
       .sort('-createdAt')
       .limit(8);

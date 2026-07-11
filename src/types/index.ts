@@ -5,14 +5,23 @@ export enum UserRole {
   ADMIN = 'admin',
 }
 
+export enum AuthProvider {
+  EMAIL = 'email',
+  GOOGLE = 'google',
+}
+
 export interface IUser extends Document {
   _id: Types.ObjectId;
-  name: string;
+  fullName: string;
   email: string;
   password: string;
-  role: UserRole;
   avatar?: string;
-  bio?: string;
+  phone?: string;
+  role: UserRole;
+  provider: AuthProvider;
+  isVerified: boolean;
+  isBlocked: boolean;
+  lastLogin?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -90,16 +99,7 @@ export interface IReview extends Document {
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
+  message: string;
   data?: T;
-  message?: string;
-  error?: string;
-}
-
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
+  errors?: string[];
 }

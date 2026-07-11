@@ -60,7 +60,7 @@ export const getMyEnrollments = async (
         select: 'title thumbnail instructor rating enrolledStudents',
         populate: {
           path: 'instructor',
-          select: 'name avatar',
+          select: 'fullName avatar',
         },
       })
       .sort('-lastAccessedAt');
@@ -88,7 +88,7 @@ export const getEnrollment = async (
       populate: [
         {
           path: 'instructor',
-          select: 'name email avatar',
+          select: 'fullName email avatar',
         },
         {
           path: 'category',
@@ -191,7 +191,7 @@ export const getEnrolledStudents = async (
     const enrollments = await Enrollment.find({
       course: req.params.courseId,
     })
-      .populate('student', 'name email avatar')
+      .populate('student', 'fullName email avatar')
       .sort('-createdAt');
 
     res.status(200).json({

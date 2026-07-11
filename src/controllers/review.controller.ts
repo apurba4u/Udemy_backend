@@ -65,7 +65,7 @@ export const getCourseReviews = async (
 ): Promise<void> => {
   try {
     const reviews = await Review.find({ course: req.params.courseId })
-      .populate('student', 'name avatar')
+      .populate('student', 'fullName avatar')
       .sort('-createdAt');
 
     res.status(200).json({

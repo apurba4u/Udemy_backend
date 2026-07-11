@@ -9,7 +9,6 @@ import { connectDatabase } from './config/database.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { User } from './models/User.js';
 import { UserRole } from './types/index.js';
-import bcrypt from 'bcrypt';
 
 import authRoutes from './routes/auth.routes.js';
 import courseRoutes from './routes/course.routes.js';
@@ -53,12 +52,12 @@ const createDefaultAdmin = async (): Promise<void> => {
     const adminExists = await User.findOne({ role: UserRole.ADMIN });
 
     if (!adminExists) {
-      const hashedPassword = await bcrypt.hash(env.ADMIN_PASSWORD, 12);
       await User.create({
-        name: 'Admin',
+        fullName: 'Admin',
         email: env.ADMIN_EMAIL,
-        password: hashedPassword,
+        password: env.ADMIN_PASSWORD,
         role: UserRole.ADMIN,
+        isVerified: true,
       });
       console.log('Default admin account created');
     }

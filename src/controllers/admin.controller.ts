@@ -23,7 +23,7 @@ export const getDashboardStats = async (
     const recentEnrollments = await Enrollment.find()
       .sort('-createdAt')
       .limit(5)
-      .populate('student', 'name email')
+      .populate('student', 'fullName email')
       .populate('course', 'title');
 
     const topCourses = await Course.find({ isPublished: true })
@@ -94,7 +94,7 @@ export const getUsers = async (
     if (search) {
       const searchTerm = search as string;
       filter.$or = [
-        { name: { $regex: searchTerm, $options: 'i' } },
+        { fullName: { $regex: searchTerm, $options: 'i' } },
         { email: { $regex: searchTerm, $options: 'i' } },
       ];
     }
@@ -228,7 +228,7 @@ export const getCourses = async (
 
     const total = await Course.countDocuments(query);
     const courses = await query
-      .populate('instructor', 'name email')
+      .populate('instructor', 'fullName email')
       .populate('category', 'name')
       .sort('-createdAt')
       .skip((Number(page) - 1) * Number(limit))

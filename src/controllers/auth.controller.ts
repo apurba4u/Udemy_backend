@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User.js';
-import { UserRole } from '../types/index.js';
+import { UserRole, AuthProvider } from '../types/index.js';
 import { sendTokenResponse } from '../utils/token.js';
 import { AppError } from '../middleware/errorHandler.js';
 
@@ -10,7 +10,7 @@ export const register = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, email, password } = req.body;
+    const { fullName, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -18,10 +18,12 @@ export const register = async (
     }
 
     const user = await User.create({
-      name,
+      fullName,
       email,
       password,
       role: UserRole.STUDENT,
+      provider: AuthProvider.EMAIL,
+      isVerified: false,
     });
 
     sendTokenResponse(res, user, 201, 'Registration successful');
@@ -47,10 +49,24 @@ export const login = async (
       throw new AppError('Invalid credentials', 401);
     }
 
+    if (user.isBlocked) {
+      throw new AppError('Your account has been blocked', 403);
+    }
+
+    if (user.provider !== AuthProvider.EMAIL) {
+      throw new AppError(
+        'This account uses social login. Please log in with Google.',
+        400
+      );
+    }
+
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       throw new AppError('Invalid credentials', 401);
     }
+
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
 
     sendTokenResponse(res, user, 200, 'Login successful');
   } catch (error) {
@@ -89,6 +105,7 @@ export const getMe = async (
 
     res.status(200).json({
       success: true,
+      message: 'User retrieved successfully',
       data: user,
     });
   } catch (error) {
@@ -102,11 +119,11 @@ export const updateProfile = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { name, bio, avatar } = req.body;
+    const { fullName, phone, avatar } = req.body;
     const updateData: Record<string, string> = {};
 
-    if (name) updateData.name = name;
-    if (bio) updateData.bio = bio;
+    if (fullName) updateData.fullName = fullName;
+    if (phone) updateData.phone = phone;
     if (avatar) updateData.avatar = avatar;
 
     const user = await User.findByIdAndUpdate(req.user?._id, updateData, {
@@ -120,6 +137,7 @@ export const updateProfile = async (
 
     res.status(200).json({
       success: true,
+      message: 'Profile updated successfully',
       data: user,
     });
   } catch (error) {
