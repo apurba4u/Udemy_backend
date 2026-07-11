@@ -30,6 +30,9 @@ import contactMessageRoutes from './routes/contactMessage.routes.js';
 import couponRoutes from './routes/coupon.routes.js';
 import paymentGatewayRoutes from './routes/paymentGateway.routes.js';
 import orderRoutes from './routes/order.routes.js';
+import auditLogRoutes from './routes/auditLog.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
+import exportRoutes from './routes/export.routes.js';
 
 const validateEnvironment = (): void => {
   const required = [
@@ -104,6 +107,9 @@ app.use('/api/contact-messages', rateLimiter, contactMessageRoutes);
 app.use('/api/coupons', rateLimiter, couponRoutes);
 app.use('/api/payment-gateways', rateLimiter, paymentGatewayRoutes);
 app.use('/api/orders', rateLimiter, orderRoutes);
+app.use('/api/audit-logs', rateLimiter, auditLogRoutes);
+app.use('/api/notifications', rateLimiter, notificationRoutes);
+app.use('/api/exports', rateLimiter, exportRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.status(200).json({
