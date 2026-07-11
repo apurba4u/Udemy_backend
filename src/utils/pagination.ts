@@ -1,4 +1,4 @@
-import { Query, Document } from 'mongoose';
+import { Query, Document, Model } from 'mongoose';
 
 export interface PaginationOptions {
   page?: number;
@@ -26,10 +26,15 @@ export const paginate = async <T extends Document>(
   const limit = Math.min(50, Math.max(1, options.limit || 10));
   const skip = (page - 1) * limit;
 
-  const countQuery = query.model.find().merge(query);
-  const total = await countQuery.countDocuments();
+  // Get the model from the query to count documents properly
+  const model: Model<T> = query.model;
 
-  let dataQuery = query.skip(skip).limit(limit);
+  // Count total documents matching the query conditions
+  const conditions = query.getFilter();
+  const total = await model.countDocuments(conditions);
+
+  // Build the data query
+  let dataQuery = query.clone();
 
   if (options.sort) {
     dataQuery = dataQuery.sort(options.sort);
@@ -49,7 +54,7 @@ export const paginate = async <T extends Document>(
     }
   }
 
-  const data = await dataQuery;
+  const data = await dataQuery.skip(skip).limit(limit);
 
   return {
     data,

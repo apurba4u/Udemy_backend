@@ -4,7 +4,6 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
-import mongoSanitize from 'express-mongo-sanitize';
 import hpp from 'hpp';
 import { env } from './config/env.js';
 import { connectDatabase } from './config/database.js';
@@ -88,10 +87,6 @@ app.use(morgan('dev', {
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-app.use(mongoSanitize({
-  replaceWith: '_',
-}));
 
 app.use(hpp());
 

@@ -19,6 +19,13 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ): void => {
+  // Log the full error for debugging
+  console.error('Error:', {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+  });
+
   let error = { ...err } as AppError;
   error.message = err.message;
 
@@ -55,7 +62,19 @@ export const errorHandler = (
   const statusCode = error.statusCode || 500;
   const message = error.message || 'Internal Server Error';
 
-  if (process.env.NODE_ENV === 'production' && !error.isOperational) {
+  // In development, always show the real error
+  if (process.env.NODE_ENV === 'development') {
+    res.status(statusCode).json({
+      success: false,
+      message,
+      error: err.message,
+      stack: err.stack,
+    });
+    return;
+  }
+
+  // In production, hide internal errors
+  if (!error.isOperational) {
     res.status(500).json({
       success: false,
       message: 'Internal Server Error',
@@ -67,7 +86,7 @@ export const errorHandler = (
   res.status(statusCode).json({
     success: false,
     message,
-    errors: error.isOperational ? [message] : ['An unexpected error occurred'],
+    errors: [message],
   });
 };
 
