@@ -201,6 +201,8 @@ export interface IBlog extends Document {
   category: string;
   tags: string[];
   published: boolean;
+  metaTitle?: string;
+  metaDescription?: string;
   createdAt: Date;
   updatedAt: Date;
 }

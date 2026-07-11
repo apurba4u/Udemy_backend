@@ -22,6 +22,11 @@ import lessonRoutes from './routes/lesson.routes.js';
 import enrollmentRoutes from './routes/enrollment.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import websiteSettingsRoutes from './routes/websiteSettings.routes.js';
+import testimonialRoutes from './routes/testimonial.routes.js';
+import blogRoutes from './routes/blog.routes.js';
+import faqRoutes from './routes/faq.routes.js';
+import contactMessageRoutes from './routes/contactMessage.routes.js';
 
 const validateEnvironment = (): void => {
   const required = [
@@ -88,6 +93,11 @@ app.use('/api/lessons', rateLimiter, lessonRoutes);
 app.use('/api/enrollments', rateLimiter, enrollmentRoutes);
 app.use('/api/reviews', rateLimiter, reviewRoutes);
 app.use('/api/admin', rateLimiter, adminRoutes);
+app.use('/api/settings', rateLimiter, websiteSettingsRoutes);
+app.use('/api/testimonials', rateLimiter, testimonialRoutes);
+app.use('/api/blogs', rateLimiter, blogRoutes);
+app.use('/api/faqs', rateLimiter, faqRoutes);
+app.use('/api/contact-messages', rateLimiter, contactMessageRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.status(200).json({
