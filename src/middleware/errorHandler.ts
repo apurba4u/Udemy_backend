@@ -31,8 +31,9 @@ export const errorHandler = (
     error = new AppError(messages.join('. '), 400);
   }
 
-  if (err.name === 'MongoServerError' && (err as any).code === 11000) {
-    const field = Object.keys((err as any).keyValue)[0];
+  if (err.name === 'MongoServerError' && (err as unknown as { code: number }).code === 11000) {
+    const keyValue = (err as unknown as { keyValue: Record<string, string> }).keyValue;
+    const field = Object.keys(keyValue)[0];
     error = new AppError(
       `Duplicate value for ${field}. Please use another value`,
       400
@@ -47,8 +48,33 @@ export const errorHandler = (
     error = new AppError('Token expired. Please login again', 401);
   }
 
-  res.status(error.statusCode || 500).json({
+  if (err.name === 'SyntaxError' && 'body' in err) {
+    error = new AppError('Invalid JSON in request body', 400);
+  }
+
+  const statusCode = error.statusCode || 500;
+  const message = error.message || 'Internal Server Error';
+
+  if (process.env.NODE_ENV === 'production' && !error.isOperational) {
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+      errors: ['Something went wrong'],
+    });
+    return;
+  }
+
+  res.status(statusCode).json({
     success: false,
-    error: error.message || 'Internal Server Error',
+    message,
+    errors: error.isOperational ? [message] : ['An unexpected error occurred'],
+  });
+};
+
+export const notFoundHandler = (req: Request, res: Response): void => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+    errors: ['The requested resource does not exist'],
   });
 };

@@ -4,9 +4,12 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import mongoSanitize from 'express-mongo-sanitize';
+import hpp from 'hpp';
 import { env } from './config/env.js';
 import { connectDatabase } from './config/database.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { rateLimiter, authRateLimiter } from './middleware/rateLimiter.js';
 import { User } from './models/User.js';
 import { PaymentGateway } from './models/PaymentGateway.js';
 import { UserRole, PaymentGatewayType } from './types/index.js';
@@ -18,34 +21,80 @@ import enrollmentRoutes from './routes/enrollment.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 
+const validateEnvironment = (): void => {
+  const required = [
+    'JWT_SECRET',
+    'BETTER_AUTH_SECRET',
+    'MONGODB_URI',
+  ];
+
+  const missing = required.filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    console.error(`Missing required environment variables: ${missing.join(', ')}`);
+    process.exit(1);
+  }
+};
+
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
+
 app.use(cors({
   origin: env.FRONTEND_URL,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
 app.use(compression());
-app.use(morgan('dev'));
+
+app.use(morgan('combined', {
+  skip: (_req, res) => res.statusCode < 400,
+}));
+
+app.use(morgan('dev', {
+  skip: (_req, res) => res.statusCode >= 400,
+}));
+
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/enrollments', enrollmentRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/admin', adminRoutes);
+app.use(mongoSanitize({
+  replaceWith: '_',
+}));
+
+app.use(hpp());
+
+app.use('/api/auth', authRateLimiter, authRoutes);
+app.use('/api/courses', rateLimiter, courseRoutes);
+app.use('/api/categories', rateLimiter, categoryRoutes);
+app.use('/api/enrollments', rateLimiter, enrollmentRoutes);
+app.use('/api/reviews', rateLimiter, reviewRoutes);
+app.use('/api/admin', rateLimiter, adminRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.status(200).json({
     success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString(),
+    environment: env.NODE_ENV,
   });
 });
 
+app.use(notFoundHandler);
 app.use(errorHandler);
 
 const seedDefaultAdmin = async (): Promise<void> => {
@@ -118,6 +167,8 @@ const seedPaymentGateways = async (): Promise<void> => {
 
 const startServer = async (): Promise<void> => {
   try {
+    validateEnvironment();
+
     await connectDatabase();
     await seedDefaultAdmin();
     await seedPaymentGateways();
