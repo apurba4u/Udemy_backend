@@ -4,7 +4,7 @@ import { env } from '../config/env.js';
 const googleClient = new OAuth2Client(
   env.GOOGLE_CLIENT_ID,
   env.GOOGLE_CLIENT_SECRET,
-  `${env.BETTER_AUTH_URL}/api/auth/google/callback`
+  `http://localhost:5001/api/auth/google/callback`
 );
 
 export const getGoogleAuthUrl = (): string => {
