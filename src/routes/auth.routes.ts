@@ -10,6 +10,8 @@ import {
   forgotPassword,
   resetPassword,
   googleLogin,
+  googleAuthUrl,
+  googleCallback,
 } from '../controllers/auth.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -122,5 +124,8 @@ router.post(
   ]),
   googleLogin
 );
+
+router.get('/google/url', googleAuthUrl);
+router.get('/google/callback', googleCallback);
 
 export default router;

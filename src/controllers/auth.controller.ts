@@ -4,6 +4,8 @@ import { UserRole, AuthProvider, AuditAction } from '../types/index.js';
 import { sendTokenResponse } from '../utils/token.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { createAuditLog } from '../services/audit.service.js';
+import { getGoogleAuthUrl, verifyGoogleToken } from '../services/google-auth.service.js';
+import { env } from '../config/env.js';
 import crypto from 'crypto';
 
 export const register = async (
@@ -377,6 +379,82 @@ export const googleLogin = async (
     });
 
     sendTokenResponse(res, user, 200, 'Google login successful');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const googleAuthUrl = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const url = getGoogleAuthUrl();
+    res.status(200).json({
+      success: true,
+      data: { url },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const googleCallback = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { code } = req.query;
+
+    if (!code) {
+      throw new AppError('Authorization code is required', 400);
+    }
+
+    const googleUser = await verifyGoogleToken(code as string);
+    if (!googleUser) {
+      throw new AppError('Failed to verify Google credentials', 401);
+    }
+
+    let user = await User.findOne({ email: googleUser.email.toLowerCase() });
+
+    if (!user) {
+      user = await User.create({
+        fullName: googleUser.fullName,
+        email: googleUser.email.toLowerCase(),
+        avatar: googleUser.avatar,
+        provider: AuthProvider.GOOGLE,
+        isVerified: true,
+        password: crypto.randomBytes(32).toString('hex'),
+      });
+    } else if (user.provider !== AuthProvider.GOOGLE) {
+      throw new AppError(
+        'This email is already registered with email/password. Please log in with email.',
+        400
+      );
+    }
+
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    await createAuditLog({
+      user: user._id,
+      action: AuditAction.LOGIN,
+      entity: 'User',
+      entityId: user._id,
+      details: { method: 'google', status: 'success' },
+      ipAddress: req.ip,
+    });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    res.redirect(`${env.FRONTEND_URL}/auth/google-callback?token=${token}&user=${encodeURIComponent(JSON.stringify({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+    }))}`);
   } catch (error) {
     next(error);
   }
