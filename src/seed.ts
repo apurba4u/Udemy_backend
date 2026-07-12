@@ -138,11 +138,11 @@ const faqData = [
 ];
 
 const couponData = [
-  { code: 'WELCOME20', type: 'percentage', value: 20, minimumPurchase: 30, usageLimit: 500, perUserLimit: 1, expiresAt: new Date('2025-12-31'), active: true },
-  { code: 'SUMMER30', type: 'percentage', value: 30, minimumPurchase: 50, usageLimit: 200, perUserLimit: 1, expiresAt: new Date('2025-08-31'), active: true },
-  { code: 'STUDENT15', type: 'percentage', value: 15, minimumPurchase: 25, usageLimit: 1000, perUserLimit: 2, expiresAt: new Date('2025-12-31'), active: true },
-  { code: 'FLASH50', type: 'fixed', value: 50, minimumPurchase: 100, usageLimit: 50, perUserLimit: 1, expiresAt: new Date('2025-07-31'), active: true },
-  { code: 'NEWUSER25', type: 'percentage', value: 25, minimumPurchase: 40, usageLimit: 300, perUserLimit: 1, expiresAt: new Date('2025-12-31'), active: true },
+  { code: 'WELCOME20', type: 'percentage', value: 20, minimumPurchase: 30, usageLimit: 500, perUserLimit: 1, expiresAt: new Date('2027-12-31'), active: true },
+  { code: 'SUMMER30', type: 'percentage', value: 30, minimumPurchase: 50, usageLimit: 200, perUserLimit: 1, expiresAt: new Date('2027-08-31'), active: true },
+  { code: 'STUDENT15', type: 'percentage', value: 15, minimumPurchase: 25, usageLimit: 1000, perUserLimit: 2, expiresAt: new Date('2027-12-31'), active: true },
+  { code: 'FLASH50', type: 'fixed', value: 50, minimumPurchase: 100, usageLimit: 50, perUserLimit: 1, expiresAt: new Date('2027-07-31'), active: true },
+  { code: 'NEWUSER25', type: 'percentage', value: 25, minimumPurchase: 40, usageLimit: 300, perUserLimit: 1, expiresAt: new Date('2027-12-31'), active: true },
 ];
 
 const testimonialData = [

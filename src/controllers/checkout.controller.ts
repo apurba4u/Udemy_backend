@@ -115,8 +115,9 @@ export const createOrder = async (
       status: OrderStatus.PENDING,
     });
 
+    // If there's an existing pending order, delete it and allow new order
     if (existingOrder) {
-      throw new AppError('You have a pending order for this course', 400);
+      await Order.findByIdAndDelete(existingOrder._id);
     }
 
     let discount = 0;

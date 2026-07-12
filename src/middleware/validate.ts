@@ -12,8 +12,12 @@ export const validate = (validations: ValidationChain[]) => {
       return next();
     }
 
+    console.log('Validation errors:', errors.array());
+    console.log('Request body:', req.body);
+
     res.status(400).json({
       success: false,
+      message: 'Validation failed',
       errors: errors.array().map((err) => ({
         field: err.type === 'field' ? err.path : 'unknown',
         message: err.msg,
