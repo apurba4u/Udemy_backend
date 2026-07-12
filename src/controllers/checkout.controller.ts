@@ -10,6 +10,7 @@ import { Enrollment } from '../models/Enrollment.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { uploadImage } from '../utils/imageUpload.js';
 import { createAuditLog } from '../services/audit.service.js';
+import { createCheckoutSession } from '../services/stripe.service.js';
 import { AuditAction, OrderStatus, PaymentStatus, PaymentGatewayType } from '../types/index.js';
 
 export const validateCoupon = async (
@@ -165,11 +166,25 @@ export const createOrder = async (
 
     const gateway = await PaymentGateway.findById(gatewayId);
 
+    let stripeSessionUrl = null;
+    if (gateway?.type === PaymentGatewayType.STRIPE) {
+      const sessionResult = await createCheckoutSession(
+        order._id.toString(),
+        course.title,
+        finalPrice,
+        courseId
+      );
+      if (sessionResult) {
+        stripeSessionUrl = sessionResult.url;
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: 'Order created successfully',
       data: {
         order,
+        stripeUrl: stripeSessionUrl,
         gateway: gateway ? {
           _id: gateway._id,
           name: gateway.name,
