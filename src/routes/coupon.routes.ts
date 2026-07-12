@@ -17,8 +17,8 @@ import { UserRole, CouponType } from '../types/index.js';
 const router = Router();
 
 router.get('/analytics', authenticate, authorize(UserRole.ADMIN), getCouponAnalytics);
-router.get('/', authenticate, authorize(UserRole.ADMIN), getCoupons);
-router.get('/:id', authenticate, authorize(UserRole.ADMIN), getCouponById);
+router.get('/', getCoupons);
+router.get('/:id', getCouponById);
 
 router.post(
   '/',
