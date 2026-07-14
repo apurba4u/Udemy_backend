@@ -270,14 +270,16 @@ export const submitManualPayment = async (
     await notifyStudentPaymentSubmitted(
       order.student,
       course?.title || 'Unknown Course',
-      gateway?.name || 'Unknown Gateway'
+      gateway?.name || 'Unknown Gateway',
+      payment._id.toString()
     );
 
     await notifyAdminNewPayment(
       req.user?.fullName || 'Unknown',
       course?.title || 'Unknown Course',
       gateway?.name || 'Unknown Gateway',
-      order.finalPrice
+      order.finalPrice,
+      payment._id.toString()
     );
 
     res.status(201).json({

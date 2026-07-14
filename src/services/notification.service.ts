@@ -28,14 +28,15 @@ export const createNotification = async (data: CreateNotificationParams): Promis
 export const notifyStudentPaymentSubmitted = async (
   studentId: Types.ObjectId | string,
   courseName: string,
-  gatewayName: string
+  gatewayName: string,
+  paymentId?: string
 ): Promise<void> => {
   await createNotification({
     user: studentId,
     type: NotificationType.PAYMENT,
     title: 'Payment Submitted',
     message: `Your payment for "${courseName}" via ${gatewayName} has been submitted and is awaiting verification.`,
-    link: '/dashboard/student/my-learning',
+    link: paymentId ? `/dashboard/student/my-learning` : '/dashboard/student/my-learning',
   });
 };
 
@@ -70,7 +71,8 @@ export const notifyAdminNewPayment = async (
   studentName: string,
   courseName: string,
   gatewayName: string,
-  amount: number
+  amount: number,
+  paymentId?: string
 ): Promise<void> => {
   try {
     const admins = await User.find({ role: 'admin' as any });
@@ -80,7 +82,7 @@ export const notifyAdminNewPayment = async (
         type: NotificationType.PAYMENT,
         title: 'New Payment Submitted',
         message: `${studentName} submitted a ${gatewayName} payment of $${amount} for "${courseName}".`,
-        link: '/dashboard/admin/payments',
+        link: paymentId ? `/dashboard/admin/payments?highlight=${paymentId}` : '/dashboard/admin/payments',
       });
     }
   } catch (error) {
