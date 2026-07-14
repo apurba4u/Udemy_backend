@@ -82,7 +82,7 @@ export const notifyAdminNewPayment = async (
         type: NotificationType.PAYMENT,
         title: 'New Payment Submitted',
         message: `${studentName} submitted a ${gatewayName} payment of $${amount} for "${courseName}".`,
-        link: paymentId ? `/dashboard/admin/payments?highlight=${paymentId}` : '/dashboard/admin/payments',
+        link: paymentId ? `/dashboard/admin/payments/${paymentId}` : '/dashboard/admin/payments',
       });
     }
   } catch (error) {
