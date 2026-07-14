@@ -8,6 +8,7 @@ const googleClient = new OAuth2Client(
 );
 
 export const getGoogleAuthUrl = (): string => {
+  const redirectUri = `http://localhost:5001/api/auth/google/callback`;
   return googleClient.generateAuthUrl({
     access_type: 'offline',
     scope: [
@@ -15,6 +16,7 @@ export const getGoogleAuthUrl = (): string => {
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
     prompt: 'consent',
+    redirect_uri: redirectUri,
   });
 };
 

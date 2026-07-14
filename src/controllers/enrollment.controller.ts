@@ -58,7 +58,7 @@ export const getMyEnrollments = async (
     const enrollments = await Enrollment.find({ student: req.user?._id })
       .populate({
         path: 'course',
-        select: 'title thumbnail instructor rating enrolledStudents',
+        select: 'title slug thumbnail instructor rating enrolledStudents',
         populate: {
           path: 'instructor',
           select: 'fullName avatar',
