@@ -1,8 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { Order } from '../models/Order.js';
 import { Payment } from '../models/Payment.js';
+import { Course } from '../models/Course.js';
+import { Enrollment } from '../models/Enrollment.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { createAuditLog } from '../services/audit.service.js';
+import {
+  notifyStudentPaymentApproved,
+  notifyStudentPaymentRejected,
+} from '../services/notification.service.js';
 import { AuditAction, OrderStatus, PaymentStatus } from '../types/index.js';
 import { paginate } from '../utils/pagination.js';
 
@@ -88,6 +94,28 @@ export const approvePayment = async (
       order.status = OrderStatus.COMPLETED;
       order.payment = payment._id;
       await order.save();
+
+      const existingEnrollment = await Enrollment.findOne({
+        student: order.student,
+        course: order.course,
+      });
+
+      if (!existingEnrollment) {
+        await Enrollment.create({
+          student: order.student,
+          course: order.course,
+          payment: payment._id,
+          enrolledAt: new Date(),
+          completed: false,
+        });
+
+        await Course.findByIdAndUpdate(order.course, {
+          $inc: { enrolledStudents: 1 },
+        });
+      }
+
+      const course = await Course.findById(order.course);
+      await notifyStudentPaymentApproved(order.student, course?.title || 'Unknown Course');
     }
 
     await createAuditLog({
@@ -132,6 +160,10 @@ export const rejectPayment = async (
     if (order) {
       order.status = OrderStatus.CANCELLED;
       await order.save();
+
+      const course = await Course.findById(order.course);
+      const rejectionReason = req.body.reason || 'Payment verification failed';
+      await notifyStudentPaymentRejected(order.student, course?.title || 'Unknown Course', rejectionReason);
     }
 
     await createAuditLog({

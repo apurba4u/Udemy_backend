@@ -11,6 +11,10 @@ import { AppError } from '../middleware/errorHandler.js';
 import { uploadImage } from '../utils/imageUpload.js';
 import { createAuditLog } from '../services/audit.service.js';
 import { createCheckoutSession } from '../services/stripe.service.js';
+import {
+  notifyStudentPaymentSubmitted,
+  notifyAdminNewPayment,
+} from '../services/notification.service.js';
 import { AuditAction, OrderStatus, PaymentStatus, PaymentGatewayType } from '../types/index.js';
 
 export const validateCoupon = async (
@@ -259,6 +263,22 @@ export const submitManualPayment = async (
       details: { orderId, transactionId },
       ipAddress: req.ip,
     });
+
+    const course = await Course.findById(order.course);
+    const gateway = await PaymentGateway.findById(order.payment);
+
+    await notifyStudentPaymentSubmitted(
+      order.student,
+      course?.title || 'Unknown Course',
+      gateway?.name || 'Unknown Gateway'
+    );
+
+    await notifyAdminNewPayment(
+      req.user?.fullName || 'Unknown',
+      course?.title || 'Unknown Course',
+      gateway?.name || 'Unknown Gateway',
+      order.finalPrice
+    );
 
     res.status(201).json({
       success: true,

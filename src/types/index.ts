@@ -263,6 +263,7 @@ export interface INotification extends Document {
   type: NotificationType;
   title: string;
   message: string;
+  link?: string;
   read: boolean;
   createdAt: Date;
   updatedAt: Date;

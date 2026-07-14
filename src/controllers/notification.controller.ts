@@ -27,11 +27,17 @@ export const getNotifications = async (
       sort: '-createdAt',
     });
 
+    const unreadCount = await Notification.countDocuments({
+      user: req.user?._id,
+      read: false,
+    });
+
     res.status(200).json({
       success: true,
       message: 'Notifications retrieved successfully',
       data: result.data,
       pagination: result.pagination,
+      unreadCount,
     });
   } catch (error) {
     next(error);
@@ -84,13 +90,14 @@ export const createNotification = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { user, type, title, message } = req.body;
+    const { user, type, title, message, link } = req.body;
 
     const notification = await Notification.create({
       user,
       type,
       title,
       message,
+      link,
     });
 
     res.status(201).json({

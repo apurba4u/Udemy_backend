@@ -54,6 +54,7 @@ export enum NotificationType {
   PAYMENT = 'payment',
   COURSE = 'course',
   SYSTEM = 'system',
+  COUPON = 'coupon',
 }
 
 export enum AuditAction {

@@ -22,6 +22,10 @@ const notificationSchema = new Schema<INotification>(
       type: String,
       required: [true, 'Message is required'],
     },
+    link: {
+      type: String,
+      default: null,
+    },
     read: {
       type: Boolean,
       default: false,
