@@ -83,7 +83,6 @@ userSchema.methods.comparePassword = async function (
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ provider: 1 });
 userSchema.index({ isVerified: 1 });

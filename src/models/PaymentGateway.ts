@@ -36,7 +36,6 @@ const paymentGatewaySchema = new Schema<IPaymentGateway>(
   }
 );
 
-paymentGatewaySchema.index({ type: 1 });
 paymentGatewaySchema.index({ enabled: 1 });
 paymentGatewaySchema.index({ displayOrder: 1 });
 

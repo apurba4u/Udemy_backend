@@ -60,7 +60,6 @@ blogSchema.pre('save', function () {
 });
 
 blogSchema.index({ title: 'text', content: 'text' });
-blogSchema.index({ slug: 1 });
 blogSchema.index({ author: 1 });
 blogSchema.index({ published: 1 });
 blogSchema.index({ createdAt: -1 });

@@ -54,8 +54,6 @@ categorySchema.pre('save', function () {
   }
 });
 
-categorySchema.index({ name: 1 });
-categorySchema.index({ slug: 1 });
 categorySchema.index({ featured: 1 });
 categorySchema.index({ active: 1 });
 
