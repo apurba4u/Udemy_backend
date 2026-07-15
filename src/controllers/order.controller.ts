@@ -23,7 +23,7 @@ export const getOrders = async (
     const query = Order.find();
 
     if (status) {
-      query.where('status').equals(status as string);
+      query.where('status').regex(new RegExp(`^${status as string}$`, 'i'));
     }
 
     const result = await paginate(query, {
@@ -84,7 +84,7 @@ export const approvePayment = async (
       throw new AppError('Payment not found', 404);
     }
 
-    if (payment.status !== PaymentStatus.PENDING) {
+    if (payment.status.toLowerCase() !== PaymentStatus.PENDING) {
       throw new AppError('Payment is not pending', 400);
     }
 
@@ -152,7 +152,7 @@ export const rejectPayment = async (
       throw new AppError('Payment not found', 404);
     }
 
-    if (payment.status !== PaymentStatus.PENDING) {
+    if (payment.status.toLowerCase() !== PaymentStatus.PENDING) {
       throw new AppError('Payment is not pending', 400);
     }
 

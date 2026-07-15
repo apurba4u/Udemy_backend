@@ -45,7 +45,7 @@ export const createCheckoutSession = async (
         },
       ],
       mode: 'payment',
-      success_url: `${env.FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${env.FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}&order_id=${orderId}`,
       cancel_url: `${env.FRONTEND_URL}/checkout/cancel`,
       metadata: {
         orderId,

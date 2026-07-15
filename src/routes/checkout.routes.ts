@@ -6,6 +6,7 @@ import {
   submitManualPayment,
   getOrderDetails,
   getMyOrders,
+  verifyStripeSession,
 } from '../controllers/checkout.controller.js';
 import { authenticate } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -45,5 +46,6 @@ router.post(
 
 router.get('/orders', authenticate, getMyOrders);
 router.get('/orders/:orderId', authenticate, getOrderDetails);
+router.post('/verify-stripe', authenticate, verifyStripeSession);
 
 export default router;

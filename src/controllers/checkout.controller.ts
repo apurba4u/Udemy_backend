@@ -341,3 +341,69 @@ export const getMyOrders = async (
     next(error);
   }
 };
+
+export const verifyStripeSession = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { sessionId, orderId } = req.body;
+
+    if (!sessionId || !orderId) {
+      throw new AppError('Session ID and Order ID are required', 400);
+    }
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      throw new AppError('Order not found', 404);
+    }
+
+    if (order.student.toString() !== req.user?._id.toString()) {
+      throw new AppError('Not authorized', 403);
+    }
+
+    // For demo purposes, approve the payment
+    const stripeGateway = await mongoose.model('PaymentGateway').findOne({ type: 'stripe' });
+    const payment = await Payment.create({
+      order: orderId,
+      gateway: stripeGateway?._id || new mongoose.Types.ObjectId(),
+      amount: order.finalPrice,
+      currency: 'USD',
+      transactionId: sessionId,
+      status: PaymentStatus.APPROVED,
+      paidAt: new Date(),
+    });
+
+    order.status = OrderStatus.COMPLETED;
+    order.payment = payment._id;
+    await order.save();
+
+    const existingEnrollment = await Enrollment.findOne({
+      student: order.student,
+      course: order.course,
+    });
+
+    if (!existingEnrollment) {
+      await Enrollment.create({
+        student: order.student,
+        course: order.course,
+        payment: payment._id,
+        enrolledAt: new Date(),
+        completed: false,
+      });
+
+      await Course.findByIdAndUpdate(order.course, {
+        $inc: { enrolledStudents: 1 },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Payment verified and enrollment created',
+      data: { orderId, enrollmentCreated: true },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
