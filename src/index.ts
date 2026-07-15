@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import hpp from 'hpp';
+import mongoose from 'mongoose';
 import { env } from './config/env.js';
 import { connectDatabase } from './config/database.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
@@ -68,7 +69,18 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: env.FRONTEND_URL,
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      env.FRONTEND_URL,
+      'https://udemy-apurba4u.vercel.app',
+      'https://learnhub-apurba4u.vercel.app',
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -115,11 +127,15 @@ app.use('/api/bookmarks', rateLimiter, bookmarkRoutes);
 app.use('/api/checkout', rateLimiter, checkoutRoutes);
 
 app.get('/api/health', (_req, res) => {
+  const mongoState = mongoose.connection.readyState;
+  const mongoStates: Record<number, string> = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+
   res.status(200).json({
     success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString(),
     environment: env.NODE_ENV,
+    database: mongoStates[mongoState] || 'unknown',
   });
 });
 
