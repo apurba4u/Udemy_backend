@@ -51,9 +51,12 @@ export const getOrderById = async (
 ): Promise<void> => {
   try {
     const order = await Order.findById(req.params.id)
-      .populate('student', 'fullName email')
-      .populate('course', 'title thumbnail')
-      .populate('payment');
+      .populate('student', 'fullName email avatar')
+      .populate('course', 'title thumbnail price slug')
+      .populate({
+        path: 'payment',
+        populate: { path: 'gateway', select: 'name type' },
+      });
 
     if (!order) {
       throw new AppError('Order not found', 404);

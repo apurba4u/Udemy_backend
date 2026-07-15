@@ -212,7 +212,7 @@ export const submitManualPayment = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { orderId, senderNumber, transactionId, screenshot } = req.body;
+    const { orderId, gatewayId, senderNumber, transactionId, screenshot } = req.body;
 
     const order = await Order.findById(orderId);
     if (!order) {
@@ -243,7 +243,7 @@ export const submitManualPayment = async (
 
     const payment = await Payment.create({
       order: orderId,
-      gateway: order.payment || new mongoose.Types.ObjectId(),
+      gateway: gatewayId || order.payment || new mongoose.Types.ObjectId(),
       amount: order.finalPrice,
       currency: 'USD',
       transactionId,

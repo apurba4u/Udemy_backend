@@ -22,10 +22,10 @@ export enum CourseLanguage {
 }
 
 export enum PaymentStatus {
-  PENDING = 'Pending',
-  APPROVED = 'Approved',
-  REJECTED = 'Rejected',
-  REFUNDED = 'Refunded',
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  REFUNDED = 'refunded',
 }
 
 export enum CouponType {
