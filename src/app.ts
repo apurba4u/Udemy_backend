@@ -53,8 +53,7 @@ app.use(cors({
   origin: (origin, callback) => {
     const allowedOrigins = [
       env.FRONTEND_URL,
-      'https://udemy-apurba4u.vercel.app',
-      'https://learnhub-apurba4u.vercel.app',
+      'https://frontend-opal-theta-mydgygpet3.vercel.app',
     ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
