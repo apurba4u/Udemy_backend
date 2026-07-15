@@ -279,7 +279,7 @@ export const submitManualPayment = async (
       course?.title || 'Unknown Course',
       gateway?.name || 'Unknown Gateway',
       order.finalPrice,
-      payment._id.toString()
+      order._id.toString()
     );
 
     res.status(201).json({
